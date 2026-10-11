@@ -554,6 +554,7 @@ export const stopwatchConfigSchema = z.object({
 
 /** 各小组件类型 → 其配置 schema。没有可配置字段的类型不在此表。 */
 export const WIDGET_CONFIG_SCHEMAS: Record<string, z.ZodTypeAny> = {
+  "time-tracker": z.object({ showRecent: bool(true) }),
   clock: clockConfigSchema,
   todo: todoConfigSchema,
   pomodoro: pomodoroConfigSchema,

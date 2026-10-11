@@ -16,6 +16,7 @@ import { FloatingThemeSync } from "./FloatingThemeSync";
 import { makeResettableLazy } from "../lib/make-resettable-lazy";
 import { useTrayEvents } from "../lib/tray-events";
 import { useCrossWindowSync } from "../lib/cross-window";
+import { useTimeTrackerSync } from "../lib/use-time-tracker";
 import { WidgetCanvas } from "../widget/WidgetCanvas";
 import { PromptDialogHost } from "../components/PromptDialog";
 import { ContextMenuHost } from "../components/ContextMenu";
@@ -109,6 +110,7 @@ export function App() {
   // 设置窗口与桌面小组件层是两个独立 WebView：这里双向同步设置项、
   // 小组件布局与小组件配置，保证"设置改了桌面立即生效"。
   useCrossWindowSync();
+  useTimeTrackerSync();
   // §4.4 壁纸派生 token：每个窗口独立拉取 + 监听 wallpaper:changed（速记窗也要跟随）。
   useWallpaperTheme();
   // 媒体监控行为偏好 → Rust watcher 单向推送（幂等，多窗并发无副作用）。

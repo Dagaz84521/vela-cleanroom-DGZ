@@ -3,6 +3,82 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
+/// Time Tracker stores absolute instants; local date/offset preserve the original context.
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../../src/types/bindings/")]
+pub struct TimeBlock {
+    pub id: String,
+    #[ts(type = "number")]
+    pub start_ms: i64,
+    #[ts(type = "number")]
+    pub end_ms: i64,
+    pub local_date: String,
+    pub utc_offset_minutes: i32,
+    pub category_id: String,
+    pub note: String,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../../src/types/bindings/")]
+pub struct TimeCategory {
+    pub id: String,
+    pub name: String,
+    pub color: String,
+    pub builtin: bool,
+    pub archived: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../../src/types/bindings/")]
+pub struct TimeTrackerConfig {
+    pub enabled: bool,
+    pub interval_minutes: u32,
+    pub start_minute: u32,
+    pub end_minute: u32,
+}
+
+impl Default for TimeTrackerConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            interval_minutes: 10,
+            start_minute: 420,
+            end_minute: 1380,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../../src/types/bindings/")]
+pub struct TimeRange {
+    #[ts(type = "number")]
+    pub start_ms: i64,
+    #[ts(type = "number")]
+    pub end_ms: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../../src/types/bindings/")]
+pub struct TimeTrackerSnapshot {
+    pub config: TimeTrackerConfig,
+    pub categories: Vec<TimeCategory>,
+    pub blocks: Vec<TimeBlock>,
+    pub latest: Option<TimeBlock>,
+    #[ts(type = "number | null")]
+    pub continuous_start_ms: Option<i64>,
+    pub pending: Option<TimeRange>,
+    pub next: Option<TimeRange>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../../src/types/bindings/")]
+pub struct TimeWriteResult {
+    pub written: u32,
+    pub skipped: u32,
+}
+
 /// IPC/备份跨语言类型的单一来源：改这里的字段后跑 `cargo test`
 /// 重新生成 src/types/bindings/*.ts，前端 sqlite.ts 直接引用，
 /// 不再手写第二份 snake_case 映射（此前 RustTask 等手写接口已开始漂移）。

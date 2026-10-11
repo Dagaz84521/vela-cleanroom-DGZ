@@ -81,6 +81,10 @@ const StylePage = makeResettableLazy(
   () => import("./pages/StylePage").then((m) => ({ default: m.StylePage })),
   "StylePage"
 );
+const TimeTrackerPage = makeResettableLazy(
+  () => import("../time-tracker/TimeTrackerPanel").then((m) => ({ default: m.TimeTrackerPanel })),
+  "TimeTrackerPage"
+);
 const GeneralPage = makeResettableLazy(
   () => import("./pages/GeneralPage").then((m) => ({ default: m.GeneralPage })),
   "GeneralPage"
@@ -229,6 +233,7 @@ function SidebarSlideBar({ page }: { page: string }) {
  * 实例页；无实例 → 磁贴页），与「视图」的折叠子列表同一交互。
  */
 const NAV_ITEMS: { id: Page; name: string; hue: string; icon: LucideIcon }[] = [
+  { id: "time-tracker", name: "时间记录", hue: "#14b8a6", icon: LayoutGrid },
   { id: "general", name: "常规", hue: "#8a97ab", icon: SlidersHorizontal },
   { id: "style", name: "样式", hue: "#e0559d", icon: Paintbrush },
   { id: "animation", name: "动画", hue: "#f59e0b", icon: Zap },
@@ -348,6 +353,16 @@ export function SettingsView() {
   const searchShortcut = useSettingsStore((s) => s.appShortcuts["settings-search"]);
   const searchKbd = searchShortcut?.enabled && searchShortcut.accel ? searchShortcut.accel.split("+").join(" ") : "";
   const [page, setPage] = usePageState();
+  useEffect(() => {
+    if (!isTauri()) return;
+    void invoke<boolean>("time_tracker_take_navigation")
+      .then((requested) => {
+        // The server consumes this intent once. StrictMode replays effects, so
+        // discarding the first resolved request would lose the cold-start navigation.
+        if (requested) setPage("time-tracker");
+      })
+      .catch((error: unknown) => console.error("[time-tracker] notification navigation failed", error));
+  }, [setPage]);
   const targetPage = useSettingsStore((s) => s.settingsPage);
   // 兜底导航用的当前页引用（避免 effect 闭包捕获过期 page）。
   const pageRef = useRef(page);
@@ -592,6 +607,11 @@ export function SettingsView() {
         listen<{ page: string; screenId?: string; title?: string }>("app:navigate-settings", (e) => {
           const p = e.payload;
           if (!p?.page) return;
+          if (p.page === "time-tracker") {
+            void invoke("time_tracker_take_navigation").catch((error: unknown) =>
+              console.error("[time-tracker] navigation acknowledgement failed", error)
+            );
+          }
           if (p.screenId && p.screenId !== useWidgetStore.getState().screenId) {
             useWidgetStore.getState().switchScreen(p.screenId);
           }
@@ -1302,6 +1322,7 @@ export function SettingsView() {
                 （null 在冷启动首拉的一拍里整块闪空，见 LazyPageFallback）。 */}
             <Suspense fallback={<LazyPageFallback />}>
               {page === "style" && <StylePage.Component />}
+              {page === "time-tracker" && <TimeTrackerPage.Component />}
               {page === "general" && <GeneralPage.Component />}
               {page === "animation" && <AnimationPage.Component />}
               {page === "connection" && <ConnectionPage.Component />}

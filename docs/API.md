@@ -1,6 +1,19 @@
 # 接口文档（Tauri IPC 命令与事件）
 
-Vela 的「API」是前端 WebView 与 Rust 核心之间的 **Tauri IPC 命令**（224 个，全部在 `lib.rs` 的 `invoke_handler` 注册，以各 `#[tauri::command]` 定义为准）与**事件通道**。无 HTTP REST 接口——唯一例外是 §4b 的本地回环推送入口；下文每个命令即一个接口，「接口地址」为命令名。核对基准：2026-10-08 工作树（`npm run lint:api` 机器对账注册表与本文件，勿手改数字漂移）。
+Vela 的「API」是前端 WebView 与 Rust 核心之间的 **Tauri IPC 命令**（230 个，全部在 `lib.rs` 的 `invoke_handler` 注册，以各 `#[tauri::command]` 定义为准）与**事件通道**。无 HTTP REST 接口——唯一例外是 §4b 的本地回环推送入口；下文每个命令即一个接口，「接口地址」为命令名。核对基准：2026-10-11 工作树（`npm run lint:api` 机器对账注册表与本文件，勿手改数字漂移）。
+
+## Time Tracker 时间记录
+
+全部命令采用 `require_trusted` 窗口闸门。配置全局共享；记录为固定 10 分钟实际时间块，以 UTC 毫秒开始时间唯一，另保存本地日期与 UTC 偏移。分类删除为归档。写入提交后发 `sync:time-tracker` 空载荷事件，各窗通过现有事件 hook 重新读取权威 SQLite 快照，不回播快照。
+
+| 命令                           | 参数                                                                     | 返回                  | 说明                                                                   |
+| ------------------------------ | ------------------------------------------------------------------------ | --------------------- | ---------------------------------------------------------------------- |
+| `time_tracker_load`            | `fromMs: number; toMs: number`                                           | `TimeTrackerSnapshot` | 单事务读取指定日期区间、最新活动、连续时长、类别、配置与提醒范围       |
+| `time_tracker_configure`       | `config: TimeTrackerConfig`                                              | `void`                | 六档提醒间隔与整 10 分钟活跃边界，提交后唤醒原生调度器                 |
+| `time_tracker_write`           | `starts: number[]; categoryId: string; note: string; overwrite: boolean` | `TimeWriteResult`     | 批量事务写入已结束时间块；默认跳过已有记录，显式覆盖保留原 ID/创建时间 |
+| `time_tracker_continue`        | `starts: number[]`                                                       | `TimeWriteResult`     | 沿用所选区间之前最后记录的类别和备注，跳过已有记录                     |
+| `time_tracker_save_category`   | `category: TimeCategory`                                                 | `void`                | 添加、编辑或归档自定义类别，预设类别不可归档                           |
+| `time_tracker_take_navigation` | —                                                                        | `boolean`             | 设置窗消费通知点击的冷启动导航意图，避免建窗期间丢事件                 |
 
 ## 1. 通用调用约定
 

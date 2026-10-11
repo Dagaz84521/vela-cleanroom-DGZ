@@ -39,7 +39,10 @@ describe("groupPickerItems", () => {
        pomodoro / deadlines（focus，描述弱匹配）——修复前组序固定
        focus>tools，flatMap 首项是 focus 的弱匹配；修复后全局最佳（clock）
        第一。 */
-    const flat = groupPickerItems(WIDGET_REGISTRY, "时", identity).flatMap((g) => g.items);
+    // Keep this regression fixture's focus matches weak; Time Tracker now has
+    // a strong name match and legitimately changes the winning group.
+    const candidates = WIDGET_REGISTRY.filter((m) => m.type !== "time-tracker");
+    const flat = groupPickerItems(candidates, "时", identity).flatMap((g) => g.items);
     expect(flat.length).toBeGreaterThan(2);
     expect(flat[0]?.type).toBe("clock");
     // tools 的次强匹配也在 focus 弱匹配之前（组间 + 组内双降序的拉平序）。

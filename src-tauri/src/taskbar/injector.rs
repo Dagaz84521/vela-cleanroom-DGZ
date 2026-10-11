@@ -10,7 +10,7 @@
 //!
 //! # 注入序列
 //! 探测 XAML（否则 Degraded）→ DLL 解包 `%TEMP%\vela\tap\<hash>\`（哈希
-变了落新目录，绕开旧 explorer 占用）→
+//! 变了落新目录，绕开旧 explorer 占用）→
 //! **驻留检查**（explorer 已挂 velatap.dll：同版本只建管道"唤醒"既有副本——
 //! DLL 被钉住永不卸载、断连后无限重连，二次注入只会制造多副本；不同版本拒绝
 //! 注入并提示重启资源管理器）→ 本进程 LoadLibrary 取 hook 导出 → 建命名标记

@@ -58,6 +58,7 @@ mod system_integration;
 /// 声明为 pub 使契约项在消费者落地前不被判为 dead_code。
 pub mod taskbar;
 mod taskbar_net;
+mod time_tracker;
 mod tray;
 mod update_sig;
 mod wallpaper;
@@ -698,6 +699,7 @@ pub fn run() {
             app.manage(system::SystemSampler::new());
             app.manage(system::StatsBroadcaster::new());
             log::info!("opened database at {:?}", db_path);
+            time_tracker::start(app.handle().clone());
 
             // 网络流量记录器：按持久化开关恢复（默认关——常驻采样
             // 线程属后台行为，opt-in；开启后 10s 采样 / 60s 增量落库并承载
@@ -852,6 +854,12 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            commands::time_tracker_load,
+            commands::time_tracker_configure,
+            commands::time_tracker_write,
+            commands::time_tracker_continue,
+            commands::time_tracker_save_category,
+            commands::time_tracker_take_navigation,
             commands::list_tasks,
             commands::add_task,
             commands::update_task,

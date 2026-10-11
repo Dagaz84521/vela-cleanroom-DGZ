@@ -16,6 +16,7 @@ export type QuickFieldDef =
   | { kind: "zones"; key: string; label: string };
 
 export const QUICK_CONFIG_FIELDS: Record<string, QuickFieldDef[]> = {
+  "time-tracker": [{ kind: "toggle", key: "showRecent", label: "显示最近记录" }],
   clock: [
     {
       kind: "segment",

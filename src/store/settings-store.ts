@@ -496,9 +496,19 @@ function normalizeShortcuts(v: unknown): ShortcutConfig {
 /** 业务通知来源（F-来源门控）：小组件直连通知的逐源开关键，与
  *  lib/notifications 的 sourceNotify/sourceEnabled 配套。 */
 export type NotificationSource =
-  "habit" | "calendar" | "timetable" | "countdown" | "email" | "weather" | "bluetooth" | "note" | "app";
+  | "habit"
+  | "calendar"
+  | "timetable"
+  | "countdown"
+  | "email"
+  | "weather"
+  | "bluetooth"
+  | "note"
+  | "app"
+  | "time-tracker";
 
 export const DEFAULT_NOTIFICATION_SOURCES: Record<NotificationSource, boolean> = {
+  "time-tracker": true,
   habit: true,
   calendar: true,
   timetable: true,

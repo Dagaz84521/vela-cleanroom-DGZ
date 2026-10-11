@@ -340,7 +340,35 @@ pub const MIGRATIONS: &[Migration] = &[
         name: "interruption_started_at_index",
         apply: migration_v11,
     },
+    Migration {
+        version: 12,
+        name: "time_tracker",
+        apply: migration_v12,
+    },
 ];
+
+/// Fixed ten-minute blocks, unique by absolute start instant (including DST folds).
+pub fn migration_v12(conn: &Connection) -> rusqlite::Result<()> {
+    conn.execute_batch(
+        "CREATE TABLE time_categories (
+            id TEXT PRIMARY KEY, name TEXT NOT NULL, color TEXT NOT NULL,
+            builtin INTEGER NOT NULL DEFAULT 0, archived INTEGER NOT NULL DEFAULT 0
+        );
+        CREATE TABLE time_blocks (
+            id TEXT PRIMARY KEY, start_ms INTEGER NOT NULL UNIQUE,
+            end_ms INTEGER NOT NULL CHECK(end_ms = start_ms + 600000),
+            local_date TEXT NOT NULL, utc_offset_minutes INTEGER NOT NULL,
+            category_id TEXT NOT NULL REFERENCES time_categories(id), note TEXT NOT NULL DEFAULT '',
+            created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+        );
+        CREATE INDEX idx_time_blocks_date ON time_blocks(local_date, start_ms);
+        INSERT INTO time_categories(id, name, color, builtin) VALUES
+            ('study','学习','#3b82f6',1), ('coding','编程','#8b5cf6',1),
+            ('reading','阅读','#14b8a6',1), ('work','工作','#f59e0b',1),
+            ('fun','娱乐','#ec4899',1), ('rest','休息','#64748b',1),
+            ('life','生活','#22c55e',1), ('other','其他','#78716c',1);",
+    )
+}
 
 /// Migration v3: add the `completed` flag to deadlines so a DDL can be marked
 /// done and moved to the bottom of the list.
@@ -546,8 +574,8 @@ mod tests {
     #[test]
     fn applies_migrations_and_records_version() {
         let conn = in_memory(MIGRATIONS).unwrap();
-        // v11 = interruptions.started_at 索引（retention/list 排序依赖）。
-        assert_eq!(current_version(&conn).unwrap(), 11);
+        // v12 adds Time Tracker categories and fixed ten-minute blocks.
+        assert_eq!(current_version(&conn).unwrap(), 12);
         let count: i64 = conn
             .query_row(
                 "SELECT COUNT(*) FROM sqlite_master WHERE type='table'",
@@ -563,7 +591,7 @@ mod tests {
         let conn = in_memory(MIGRATIONS).unwrap();
         // Re-running should be a no-op.
         migrate(&conn, MIGRATIONS).unwrap();
-        assert_eq!(current_version(&conn).unwrap(), 11);
+        assert_eq!(current_version(&conn).unwrap(), 12);
     }
 
     #[test]

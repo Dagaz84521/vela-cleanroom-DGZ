@@ -1,0 +1,547 @@
+/* Time Tracker uses Vela theme tokens and static color blocks; no independent animation loop. */
+.tt-widget,
+.tt-panel,
+.tt-settings,
+.tt-record {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: var(--ink);
+  position: relative;
+}
+.tt-widget {
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  gap: 12px;
+  overflow: hidden;
+}
+.tt-widget-head,
+.tt-panel-head,
+.tt-toolbar,
+.tt-actions,
+.tt-setting-row,
+.tt-legend,
+.tt-summary > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tt-widget-head > span {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: var(--fs-11);
+}
+.tt-widget-head svg {
+  color: var(--accent);
+}
+.tt-current {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tt-current b {
+  font-size: var(--fs-20);
+}
+.tt-current > span:last-child {
+  font-size: var(--fs-12);
+}
+.tt-muted {
+  color: var(--muted);
+  font-size: var(--fs-12);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.tt-next {
+  margin: 0;
+  font-size: var(--fs-13);
+}
+.tt-panel {
+  padding: 16px;
+  max-height: 80vh;
+  overflow: auto;
+}
+.tt-panel h2,
+.tt-panel h3,
+.tt-settings h3 {
+  margin: 0;
+}
+.tt-panel h2 {
+  font-size: var(--fs-20);
+}
+.tt-panel h3,
+.tt-settings h3 {
+  font-size: var(--fs-14);
+}
+.tt-panel-head {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.tt-toolbar,
+.tt-actions,
+.tt-legend {
+  flex-wrap: wrap;
+}
+.tt-button,
+.tt-category {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--rad-8);
+  color: var(--ink);
+  background: var(--paper);
+  cursor: pointer;
+  font-size: var(--fs-12);
+  transition: background var(--dur-fx-fast) var(--ease-fx);
+}
+.tt-button:hover,
+.tt-category:hover {
+  background: color-mix(in srgb, var(--accent) 12%, var(--paper));
+}
+.tt-button.primary {
+  background: var(--accent);
+  color: var(--btn-fg);
+}
+.tt-button:disabled,
+.tt-category:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.tt-button:focus-visible,
+.tt-category:focus-visible,
+.tt-time-block:focus-visible,
+.tt-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.tt-categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 6px;
+}
+.tt-category {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tt-category.selected {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.tt-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--muted);
+}
+.tt-dot.empty {
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+.tt-note-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--fs-12);
+}
+.tt-input {
+  box-sizing: border-box;
+  min-height: 44px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--rad-8);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: var(--fs-12);
+}
+.tt-message {
+  color: var(--accent);
+  margin: 0;
+  font-size: var(--fs-12);
+}
+.tt-error {
+  color: var(--danger);
+  margin: 0;
+  font-size: var(--fs-12);
+  overflow-wrap: anywhere;
+}
+.tt-legend {
+  font-size: var(--fs-11);
+}
+.tt-legend > span {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+}
+.tt-timeline-wrap {
+  position: relative;
+}
+.tt-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 50vh;
+  overflow: auto;
+  padding: 2px;
+}
+.tt-hour {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tt-hour-label {
+  flex: 0 0 70px;
+  font-size: var(--fs-12);
+  font-variant-numeric: tabular-nums;
+}
+.tt-hour-label small {
+  display: block;
+  color: var(--muted);
+  font-size: var(--fs-10);
+}
+.tt-hour-blocks {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  flex: 1;
+}
+.tt-time-block {
+  min-height: 48px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line);
+  border-radius: var(--rad-6);
+  color: var(--ink);
+  background: var(--paper);
+  cursor: pointer;
+  font-size: var(--fs-11);
+  text-align: left;
+  padding: 5px;
+}
+.tt-time-block small {
+  display: block;
+  font-size: var(--fs-10);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tt-time-block.selected {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.tt-time-block.future {
+  opacity: 0.35;
+  cursor: default;
+}
+.tt-selection {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+/* The Time Tracker owns its scroll regions; the shared canvas/card is unchanged. */
+.widget-card[data-widget-type="time-tracker"] .widget-card-body {
+  overflow: hidden;
+}
+.tt-widget-overview,
+.tt-widget-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+}
+.tt-widget-overview[hidden] {
+  display: none;
+}
+.tt-widget-head,
+.tt-widget .tt-current,
+.tt-widget .tt-next,
+.tt-mini-recent,
+.tt-widget-actions,
+.tt-widget-nav,
+.tt-widget-range {
+  flex-shrink: 0;
+}
+.tt-widget .tt-current {
+  gap: 3px;
+}
+.tt-mini-recent {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tt-mini-day {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--rad-8);
+}
+.tt-mini-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-11);
+  flex-shrink: 0;
+}
+.tt-mini-heading > span {
+  color: var(--muted);
+  font-size: var(--fs-10);
+}
+.tt-mini-heading .tt-button {
+  margin-left: auto;
+  padding: 2px 4px;
+  min-height: 24px;
+  font-size: var(--fs-10);
+}
+.tt-mini-columns {
+  display: grid;
+  grid-template-columns: 28px repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  padding-right: 6px;
+  text-align: center;
+  color: var(--muted);
+  font-size: var(--fs-10);
+  flex-shrink: 0;
+}
+.tt-mini-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  position: relative;
+  padding: 2px 6px 2px 0;
+}
+.tt-mini-scroll:focus-visible,
+.tt-mini-tile:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.tt-mini-hour {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 4px;
+  min-height: 20px;
+}
+.tt-mini-hour-label {
+  flex: 0 0 28px;
+  color: var(--muted);
+  font-size: var(--fs-10);
+  font-variant-numeric: tabular-nums;
+}
+.tt-mini-hour-label small {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: var(--fs-10);
+}
+.tt-mini-tiles {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  flex: 1;
+}
+.tt-mini-tile {
+  height: 20px;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--rad-4);
+  background: color-mix(in srgb, var(--muted) 16%, var(--paper));
+  cursor: pointer;
+}
+.tt-mini-tile.future {
+  opacity: 0.35;
+  cursor: default;
+}
+.tt-mini-tile.current {
+  border: 1px dashed var(--accent);
+  opacity: 0.7;
+}
+.tt-mini-tile[aria-pressed="true"] {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.tt-mini-count {
+  font-size: var(--fs-10);
+  flex-shrink: 0;
+}
+.tt-mini-detail {
+  min-height: 30px;
+  max-height: 40px;
+  overflow-y: auto;
+  flex-shrink: 0;
+  font-size: var(--fs-11);
+}
+.tt-widget-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.tt-widget-actions .tt-button {
+  padding: 6px;
+  min-width: 0;
+}
+.tt-widget-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--fs-12);
+}
+.tt-widget-nav .tt-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  min-height: 26px;
+}
+.tt-widget-range {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--rad-8);
+}
+.tt-widget-range b {
+  font-size: var(--fs-18);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.tt-widget-range .tt-muted {
+  font-size: var(--fs-10);
+  line-height: 1.3;
+}
+.tt-record-compact {
+  flex: 1;
+  min-height: 0;
+  gap: 6px;
+}
+.tt-record-compact .tt-categories {
+  order: 1;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-height: 96px;
+  min-height: 44px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px;
+  flex-shrink: 0;
+  gap: 4px;
+}
+.tt-record-compact .tt-category {
+  min-width: 0;
+  justify-content: center;
+  padding: 6px 2px;
+  gap: 4px;
+  font-size: var(--fs-11);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.tt-record-compact .tt-note-label {
+  order: 2;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.tt-record-compact .tt-input {
+  min-height: 34px;
+  padding: 6px;
+}
+.tt-record-compact .tt-actions {
+  order: 4;
+  flex: 1;
+  min-height: 88px;
+  align-items: stretch;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 4px;
+}
+.tt-record-compact .tt-actions > .primary {
+  margin-top: auto;
+}
+.tt-record-compact .tt-actions > .tt-button {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 6px;
+}
+.tt-record-compact .tt-actions > .tt-muted,
+.tt-record-compact > .tt-error {
+  font-size: var(--fs-11);
+  line-height: 1.2;
+  max-height: 28px;
+  overflow-y: auto;
+}
+.tt-record-compact > p {
+  order: 3;
+  max-height: 48px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.tt-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tt-busy {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--paper) 80%, transparent);
+  color: var(--muted);
+  pointer-events: none;
+  font-size: var(--fs-12);
+}
+.tt-setting-row {
+  justify-content: space-between;
+  font-size: var(--fs-13);
+  gap: 16px;
+}
+.tt-category-editor {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.tt-category-editor .tt-input {
+  flex: 1;
+}
+.tt-category-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tt-color {
+  min-height: 44px;
+  width: 44px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+.tt-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: var(--fs-12);
+}
+.tt-summary > div {
+  flex-wrap: wrap;
+}
+.tt-summary small {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .tt-hour-label {
+    flex-basis: 48px;
+  }
+  .tt-time-block small {
+    display: none;
+  }
+}

@@ -199,6 +199,8 @@ const TodayOverviewWidget = lazyWidget(() => import("./widgets/TodayOverviewWidg
 const UnitConverterWidget = lazyWidget(() => import("./widgets/UnitConverterWidget"), "UnitConverterWidget");
 const WeatherWidget = lazyWidget(() => import("./widgets/WeatherWidget"), "WeatherWidget");
 const ClipboardHistoryWidget = lazyWidget(() => import("./widgets/ClipboardHistoryWidget"), "ClipboardHistoryWidget");
+const TimeTrackerWidget = lazyWidget(() => import("./widgets/TimeTrackerWidget"), "TimeTrackerWidget");
+const TimeTrackerExpanded = lazyExpanded(() => import("./widgets/TimeTrackerExpanded"), "TimeTrackerExpanded");
 
 /* 沉浸展开态组件（首批：音乐沉浸页 / 天气站；补任务全览/课程表/
    专注统计/邮件——任务全览在 todo 条目上，其余三个复用面板本体）。 */
@@ -384,6 +386,18 @@ export const CATEGORY_NAMES: Record<WidgetCategory, string> = {
 };
 
 export const WIDGET_REGISTRY: WidgetMeta[] = [
+  {
+    type: "time-tracker",
+    name: "时间记录",
+    desc: "周期提醒，记录每天的时间分配",
+    category: "focus",
+    icon: Timer,
+    defaultSize: { w: 340, h: 470 },
+    minSize: { w: 280, h: 450 },
+    component: TimeTrackerWidget,
+    ExpandedComponent: TimeTrackerExpanded,
+    expandFloating: true
+  },
   {
     type: "clock",
     name: "时钟",
@@ -876,6 +890,7 @@ export function useTranslatedWidgetRegistry(): WidgetMeta[] {
  * registry type 建立与上方 lazyWidget 相同 import 表达式的映射即可安全去重。
  * ------------------------------------------------------------------ */
 export const WIDGET_LOADERS: Record<string, () => Promise<unknown>> = {
+  "time-tracker": () => import("./widgets/TimeTrackerWidget"),
   analytics: () => import("../features/analytics/AnalyticsPanel"),
   deadlines: () => import("../features/deadlines/DeadlinePanel"),
   pomodoro: () => import("../features/pomodoro/PomodoroPanel"),
@@ -927,6 +942,7 @@ export function preloadWidgets(types?: string[]): void {
 
 /* 沉浸组件 chunk 的预热通道（与 lazyExpanded 同一 import 表达式，Vite 去重）。 */
 export const EXPANDED_LOADERS: Record<string, () => Promise<unknown>> = {
+  "time-tracker": () => import("./widgets/TimeTrackerExpanded"),
   music: () => import("./widgets/MusicImmersive"),
   nowplaying: () => import("./widgets/MusicImmersive"),
   weather: () => import("./widgets/WeatherStation"),

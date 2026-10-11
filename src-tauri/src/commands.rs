@@ -14,6 +14,133 @@ use crate::repositories::{
 };
 use crate::AppState;
 
+#[tauri::command]
+pub async fn time_tracker_load(
+    window: tauri::Window,
+    app: tauri::AppHandle,
+    from_ms: i64,
+    to_ms: i64,
+) -> DbResult<crate::models::TimeTrackerSnapshot> {
+    require_trusted(&window)?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let state = app.state::<AppState>();
+        let conn = state.read_db.acquire()?;
+        crate::time_tracker::TimeTrackerRepo::snapshot(&conn, from_ms, to_ms, chrono::Local::now())
+    })
+    .await
+    .map_err(|e| DbError::Task(e.to_string()))?
+}
+
+#[tauri::command]
+pub async fn time_tracker_configure(
+    window: tauri::Window,
+    app: tauri::AppHandle,
+    config: crate::models::TimeTrackerConfig,
+) -> DbResult<()> {
+    require_trusted(&window)?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let state = app.state::<AppState>();
+        let conn = lock_db(&state.db)?;
+        crate::time_tracker::TimeTrackerRepo::set_config(&conn, &config)?;
+        drop(conn);
+        crate::settings_mirror::notify_changed();
+        use tauri::Emitter;
+        let _ = app.emit("sync:time-tracker", ());
+        Ok(())
+    })
+    .await
+    .map_err(|e| DbError::Task(e.to_string()))?
+}
+
+#[tauri::command]
+pub async fn time_tracker_write(
+    window: tauri::Window,
+    app: tauri::AppHandle,
+    starts: Vec<i64>,
+    category_id: String,
+    note: String,
+    overwrite: bool,
+) -> DbResult<crate::models::TimeWriteResult> {
+    require_trusted(&window)?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let state = app.state::<AppState>();
+        let conn = lock_db(&state.db)?;
+        let result = crate::time_tracker::TimeTrackerRepo::write(
+            &conn,
+            &starts,
+            &category_id,
+            &note,
+            overwrite,
+            chrono::Utc::now().timestamp_millis(),
+        )?;
+        drop(conn);
+        use tauri::Emitter;
+        let _ = app.emit("sync:time-tracker", ());
+        Ok(result)
+    })
+    .await
+    .map_err(|e| DbError::Task(e.to_string()))?
+}
+
+#[tauri::command]
+pub async fn time_tracker_continue(
+    window: tauri::Window,
+    app: tauri::AppHandle,
+    starts: Vec<i64>,
+) -> DbResult<crate::models::TimeWriteResult> {
+    require_trusted(&window)?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let state = app.state::<AppState>();
+        let conn = lock_db(&state.db)?;
+        let before = starts
+            .iter()
+            .min()
+            .ok_or_else(|| DbError::Task("No blocks selected".into()))?;
+        let previous = crate::time_tracker::TimeTrackerRepo::latest_before(&conn, *before)?
+            .ok_or_else(|| DbError::Task("No previous activity".into()))?;
+        let result = crate::time_tracker::TimeTrackerRepo::write(
+            &conn,
+            &starts,
+            &previous.category_id,
+            &previous.note,
+            false,
+            chrono::Utc::now().timestamp_millis(),
+        )?;
+        drop(conn);
+        use tauri::Emitter;
+        let _ = app.emit("sync:time-tracker", ());
+        Ok(result)
+    })
+    .await
+    .map_err(|e| DbError::Task(e.to_string()))?
+}
+
+#[tauri::command]
+pub async fn time_tracker_save_category(
+    window: tauri::Window,
+    app: tauri::AppHandle,
+    category: crate::models::TimeCategory,
+) -> DbResult<()> {
+    require_trusted(&window)?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let state = app.state::<AppState>();
+        let conn = lock_db(&state.db)?;
+        crate::time_tracker::TimeTrackerRepo::save_category(&conn, &category)?;
+        drop(conn);
+        use tauri::Emitter;
+        let _ = app.emit("sync:time-tracker", ());
+        Ok(())
+    })
+    .await
+    .map_err(|e| DbError::Task(e.to_string()))?
+}
+
+#[tauri::command]
+pub fn time_tracker_take_navigation(window: tauri::Window) -> DbResult<bool> {
+    require_trusted(&window)?;
+    Ok(crate::time_tracker::OPEN_REQUESTED.swap(false, std::sync::atomic::Ordering::SeqCst))
+}
+
 // 下列读写命令全部改为 async + spawn_blocking。同步命令跑在
 // Tauri 主线程上——import/export 持锁期间，前端轮询这些命令会把所有窗口
 // 冻结、并可能让低级鼠标钩子超时被系统摘除（点击穿透失灵）。签名从

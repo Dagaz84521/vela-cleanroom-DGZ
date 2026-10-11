@@ -27,6 +27,7 @@ import { SettingToggleRow, Toggle } from "../shared";
 /** 小组件类型 → 逐源开关键（与 widgets/*.tsx 的 sourceNotify 调用一一对应；
     文案与待办组件配置页的「通知来源」区块保持一致，复用其英文翻译）。 */
 const SOURCE_ROWS: { type: string; source: NotificationSource; title: string; desc: string }[] = [
+  { type: "time-tracker", source: "time-tracker", title: "时间记录", desc: "周期提醒，记录每天的时间分配" },
   { type: "habit", source: "habit", title: "习惯打卡提醒", desc: "习惯到期未打卡时提醒" },
   { type: "calendar", source: "calendar", title: "日历提醒", desc: "日历事件到点提醒" },
   { type: "timetable", source: "timetable", title: "课程表上课提醒", desc: "下节课开始前推送提醒" },

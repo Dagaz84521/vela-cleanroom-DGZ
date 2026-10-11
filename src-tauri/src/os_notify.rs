@@ -45,10 +45,30 @@ pub fn send_os_notification(
     if !crate::trusted_window(window.label()) {
         return Err("untrusted window".into());
     }
-    let activation = OsNotifyActivation {
-        source: source.unwrap_or_else(|| "app".to_string()),
+    send_with_activation(
+        app,
+        title,
+        body,
+        source.unwrap_or_else(|| "app".into()),
         instance_id,
-        action: None,
+        None,
+    )
+}
+
+/// Shared by trusted IPC and application-owned reminders; retains the existing
+/// WinRT activation/visibility behavior rather than creating another toast path.
+pub fn send_with_activation(
+    app: AppHandle,
+    title: String,
+    body: String,
+    source: String,
+    instance_id: Option<String>,
+    action: Option<String>,
+) -> Result<(), String> {
+    let activation = OsNotifyActivation {
+        source,
+        instance_id,
+        action,
     };
     let handle = app.clone();
     let toast = Toast::new(Toast::POWERSHELL_APP_ID)
@@ -57,6 +77,32 @@ pub fn send_os_notification(
         .on_activated(move |action| {
             let mut payload = activation.clone();
             payload.action = action;
+            if payload.source == "time-tracker" {
+                // Use the range captured when this toast was created, even when
+                // the user clicks an older toast after later reminders arrived.
+                if let Some(raw) = activation.action.as_deref() {
+                    if let Ok(range) = serde_json::from_str::<crate::models::TimeRange>(raw) {
+                        if let Some(state) = handle.try_state::<crate::AppState>() {
+                            match crate::db::lock_db(&state.db).and_then(|conn| {
+                                crate::time_tracker::TimeTrackerRepo::set_pending(&conn, &range)
+                            }) {
+                                Ok(()) => {
+                                    let _ = handle.emit("sync:time-tracker", ());
+                                }
+                                Err(e) => log::warn!("time tracker clicked range unavailable: {e}"),
+                            }
+                        }
+                    }
+                }
+                crate::time_tracker::OPEN_REQUESTED
+                    .store(true, std::sync::atomic::Ordering::SeqCst);
+                crate::windows::show_settings_window(&handle);
+                let _ = handle.emit(
+                    "app:navigate-settings",
+                    serde_json::json!({"page": "time-tracker"}),
+                );
+                return Ok(());
+            }
             // 用户点通知意味着想看应用：先把小组件层亮出来（托盘「隐藏小组件」
             // 时前端可能整个不可见，不能只指望前端自己处理）。
             for (label, w) in handle.webview_windows() {

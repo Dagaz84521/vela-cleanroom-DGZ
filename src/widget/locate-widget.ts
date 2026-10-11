@@ -26,6 +26,7 @@ export function findInstanceIdByType(type: string): string | null {
 /** 通知来源 → 可定位的小组件类型（app 来源无对应组件；未知来源不可定位）。
     通知中心「定位来源组件」与 OS 通知点击落地（os-notify:activated）共用。 */
 export const SOURCE_TO_WIDGET: Partial<Record<string, string>> = {
+  "time-tracker": "time-tracker",
   pomodoro: "pomodoro",
   todo: "todo",
   deadline: "deadlines",

@@ -79,9 +79,9 @@ function subscribeTicker(intervalMs: number, cb: () => void): () => void {
  * const now30 = useNow(); // 30s 粒度面板，与其它面板共享节拍器
  * `
  */
-export function useNow(intervalMs = 30_000) {
+export function useNow(intervalMs = 30_000, active = true) {
   const [now, setNow] = useState(() => new Date());
-  useEffect(() => subscribeTicker(intervalMs, () => setNow(new Date())), [intervalMs]);
+  useEffect(() => (active ? subscribeTicker(intervalMs, () => setNow(new Date())) : undefined), [intervalMs, active]);
   return now;
 }
 

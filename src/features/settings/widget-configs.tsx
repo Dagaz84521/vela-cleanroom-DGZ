@@ -3,6 +3,7 @@
  * 组织起来，供 SettingsView 按 `widget-config-<instanceId>` 页面渲染。
  */
 import { useDelayedUnmount } from "../../lib/anim";
+import { TimeTrackerSettings } from "../time-tracker/TimeTrackerSettings";
 import { animDurations } from "../../lib/durations";
 import { useSliderDraft } from "../../lib/use-slider-draft";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
@@ -258,6 +259,7 @@ export function WidgetTypeConfigFields({
   return (
     <>
       {type === "clock" && <ClockConfig config={config} update={update} />}
+      {type === "time-tracker" && <TimeTrackerSettings />}
       {type === "weather" && <WeatherConfig config={config} update={update} />}
       {type === "system" && <SystemMonitorConfig config={config} update={update} />}
       {type === "hardware" && <HardwareConfig config={config} update={update} />}
